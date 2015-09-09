@@ -82,6 +82,7 @@ bitset facesBetween(EDGE *from, EDGE *to){
 
 boolean continueCycle(EDGE *e, int remainingVertices, 
         bitset saturatedFaces, bitset facesRight, bitset facesLeft){
+    //the end point of e has not been added to the cycle yet
     
     if(IS_NOT_EMPTY(INTERSECTION(facesRight, facesLeft))){
         //a face cannot be on both sides of the cycles
