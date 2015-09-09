@@ -32,9 +32,8 @@ typedef struct e /* The data type used for edges */ {
     struct e *inverse; /* the edge that is inverse to this one */
     int mark, index; /* two ints for temporary use;
                           Only access mark via the MARK macros. */
-
-    int left_facesize; /* size of the face in prev-direction of the edge.
-        		  Only used for -p option. */
+    
+    bitset incident_faces;
 } EDGE;
 
 EDGE *firstedge[MAXN]; /* pointer to arbitrary edge out of vertex i. */
@@ -44,6 +43,8 @@ EDGE *facestart[MAXF]; /* pointer to arbitrary edge of face i. */
 int faceSize[MAXF]; /* pointer to arbitrary edge of face i. */
 
 bitset neighbours[MAXN];
+
+bitset verticesInFace[MAXF];
 
 EDGE edges[MAXE];
 
@@ -184,6 +185,17 @@ void decodePlanarCode(unsigned short* code) {
     makeDual();
 
     // nv - ne/2 + nf = 2
+    
+    //store some additional data
+    for(i = 0; i < MAXF; i++){
+        verticesInFace[i] = EMPTY_SET;
+    }
+    
+    for(i = 0; i < ne; i++){
+        edges[i].incident_faces = UNION(SINGLETON(edges[i].rightface),
+                SINGLETON(edges[i].inverse->rightface));
+        ADD(verticesInFace[edges[i].rightface], edges[i].end);
+    }
 }
 
 /**
