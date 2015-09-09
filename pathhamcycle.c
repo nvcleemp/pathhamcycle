@@ -66,7 +66,22 @@ int nf;
 //data for the cycle we're building
 bitset currentCycle;
 
-boolean continueCycle(EDGE *e, int remainingVertices){
+bitset facesBetween(EDGE *from, EDGE *to){
+    EDGE *e, *elast;
+    bitset faces = EMPTY_SET;
+    
+    e = elast = from;
+    
+    while(e != to){
+        ADD(faces, e->rightface);
+        e = e->next;
+    }
+    
+    return faces;
+}
+
+boolean continueCycle(EDGE *e, int remainingVertices, 
+        bitset saturatedFaces, bitset facesRight, bitset facesLeft){
     exit(EXIT_FAILURE);
 }
 
@@ -92,10 +107,13 @@ boolean hasPathHamiltonianCycle(){
     e = elast = firstedge[minDegreeVertex];
     do {
         ADD(currentCycle, e->end);
+        bitset saturatedFaces = e->incident_faces;
         e2 = elast2 = firstedge[e->end];
         do {
             if(!CONTAINS(currentCycle, e2->end)){
-                if(continueCycle(e2, nv - 2)){
+                bitset facesRight = facesBetween(e2, e->inverse);
+                bitset facesLeft = facesBetween(e->inverse, e2);
+                if(continueCycle(e2, nv - 2, saturatedFaces, facesRight, facesLeft)){
                     return TRUE;
                 }
             }
