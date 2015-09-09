@@ -80,7 +80,7 @@ bitset facesBetween(EDGE *from, EDGE *to){
     return faces;
 }
 
-boolean continueCycle(EDGE *e, int remainingVertices, 
+boolean continueCycle(EDGE *e, int remainingVertices, int target,
         bitset saturatedFaces, bitset facesRight, bitset facesLeft){
     //the end point of e has not been added to the cycle yet
     
@@ -120,7 +120,7 @@ boolean hasPathHamiltonianCycle(){
             if(!CONTAINS(currentCycle, e2->end)){
                 bitset facesRight = facesBetween(e2, e->inverse);
                 bitset facesLeft = facesBetween(e->inverse, e2);
-                if(continueCycle(e2, nv - 2, saturatedFaces, facesRight, facesLeft)){
+                if(continueCycle(e2, nv - 2, minDegreeVertex, saturatedFaces, facesRight, facesLeft)){
                     return TRUE;
                 }
             }
