@@ -63,11 +63,49 @@ int nv;
 int ne;
 int nf;
 
+//data for the cycle we're building
+bitset currentCycle;
 
+boolean continueCycle(EDGE *e, int remainingVertices){
+    exit(EXIT_FAILURE);
+}
 
 boolean hasPathHamiltonianCycle(){
+    int i;
+    int minDegree;
+    int minDegreeVertex;
+    EDGE *e, *elast;
+    EDGE *e2, *elast2;
     
-    exit(EXIT_FAILURE);
+    //look for the vertex with the smallest degree
+    minDegree = 6; //there is always a vertex with degree at most 5 in a plane graph
+    minDegreeVertex = 0; //just some vertex
+    for(i = 0; i < nv; i++){
+        if(degree[i] < minDegree){
+            minDegree = degree[i];
+            minDegreeVertex = i;
+        }
+    }
+    
+    //start looking for a cycle
+    currentCycle = SINGLETON(minDegreeVertex);
+    e = elast = firstedge[minDegreeVertex];
+    do {
+        ADD(currentCycle, e->end);
+        e2 = elast2 = firstedge[e->end];
+        do {
+            if(!CONTAINS(currentCycle, e2->end)){
+                if(continueCycle(e2, nv - 2)){
+                    return TRUE;
+                }
+            }
+            e2 = e2->next;
+        } while (e2 != elast2);
+        REMOVE(currentCycle, e->end);
+        e = e->next;
+    } while (e != elast);
+    
+    return FALSE;
 }
 
 //=============== Output of binary graph code ===========================
