@@ -85,6 +85,11 @@ bitset facesBetween(EDGE *from, EDGE *to){
     return faces;
 }
 
+boolean finishCycle(EDGE *newEdge, bitset saturatedFaces, bitset facesRight,
+        bitset facesLeft, bitset emptyFaces){
+    exit(EXIT_FAILURE); //not implemented yet
+}
+
 boolean continueCycle(EDGE *newEdge, int remainingVertices,
         bitset saturatedFaces, bitset facesRight, bitset facesLeft,
         bitset emptyFaces){
@@ -121,7 +126,17 @@ boolean continueCycle(EDGE *newEdge, int remainingVertices,
         //this was the last vertex: we try to close the cycle
         if(CONTAINS(neighbours[newEdge->end], firstVertex)){
             //the cycle can be closed
-            //TODO
+            
+            //find closing edge
+            e = elast = firstedge[newEdge->end];
+            while (e->end != firstVertex){
+                e = e->next;
+            }
+            
+            finishCycle(e, saturatedFaces,
+                    UNION(facesRight, facesBetween(e, newEdge->inverse)),
+                    UNION(facesLeft, facesBetween(newEdge->inverse, e)),
+                    emptyFaces);
         }
     } else {
         //just continue the cycle
