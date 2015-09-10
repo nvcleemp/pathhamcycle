@@ -65,8 +65,8 @@ int nf;
 
 //data for the cycle we're building
 bitset currentCycle;
-int firstVertex;
-EDGE *firstEdge;
+int firstVertexCycle;
+EDGE *firstEdgeCycle;
 
 /* Returns a bitset containing the indices of all faces contained
  * between from and to in a clockwise directions.
@@ -95,8 +95,8 @@ boolean finishCycle(EDGE *newEdge, bitset saturatedFaces, bitset facesRight,
     }
     
     ADD_ALL(saturatedFaces, newEdge->incident_faces);
-    ADD_ALL(facesRight, facesBetween(firstEdge, newEdge->inverse));
-    ADD_ALL(facesLeft, facesBetween(newEdge->inverse, firstEdge));
+    ADD_ALL(facesRight, facesBetween(firstEdgeCycle, newEdge->inverse));
+    ADD_ALL(facesLeft, facesBetween(newEdge->inverse, firstEdgeCycle));
     
     for(i = 0; i < nf; i++){
         if(!CONTAINS(saturatedFaces, i)){
@@ -147,12 +147,12 @@ boolean continueCycle(EDGE *newEdge, int remainingVertices,
     
     if(remainingVertices == 1){
         //this was the last vertex: we try to close the cycle
-        if(CONTAINS(neighbours[newEdge->end], firstVertex)){
+        if(CONTAINS(neighbours[newEdge->end], firstVertexCycle)){
             //the cycle can be closed
             
             //find closing edge
             e = elast = firstedge[newEdge->end];
-            while (e->end != firstVertex){
+            while (e->end != firstVertexCycle){
                 e = e->next;
             }
             
@@ -200,12 +200,12 @@ boolean hasPathHamiltonianCycle(){
     }
     
     //start looking for a cycle
-    firstVertex = minDegreeVertex;
+    firstVertexCycle = minDegreeVertex;
     currentCycle = SINGLETON(minDegreeVertex);
     e = elast = firstedge[minDegreeVertex];
     do {
         ADD(currentCycle, e->end);
-        firstEdge = e;
+        firstEdgeCycle = e;
         bitset saturatedFaces = e->incident_faces;
         e2 = elast2 = firstedge[e->end];
         do {
