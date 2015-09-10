@@ -87,7 +87,30 @@ bitset facesBetween(EDGE *from, EDGE *to){
 
 boolean finishCycle(EDGE *newEdge, bitset saturatedFaces, bitset facesRight,
         bitset facesLeft, bitset emptyFaces){
-    exit(EXIT_FAILURE); //not implemented yet
+    int i;
+    
+    if(IS_NOT_EMPTY(INTERSECTION(facesRight, facesLeft))){
+        //a face cannot be on both sides of the cycles
+        return FALSE;
+    }
+    
+    ADD_ALL(saturatedFaces, newEdge->incident_faces);
+    ADD_ALL(facesRight, facesBetween(firstEdge, newEdge->inverse));
+    ADD_ALL(facesLeft, facesBetween(newEdge->inverse, firstEdge));
+    
+    for(i = 0; i < nf; i++){
+        if(!CONTAINS(saturatedFaces, i)){
+            //we found an empty face
+            ADD(emptyFaces, i);
+        }
+    }
+    if(IS_NOT_EMPTY(INTERSECTION(emptyFaces, facesLeft)) && 
+            IS_NOT_EMPTY(INTERSECTION(emptyFaces, facesRight))){
+        //there is an empty face on both sides of the cycle
+        return FALSE;
+    }
+    
+    return TRUE;
 }
 
 boolean continueCycle(EDGE *newEdge, int remainingVertices,
