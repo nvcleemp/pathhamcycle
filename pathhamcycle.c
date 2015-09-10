@@ -65,6 +65,8 @@ int nf;
 
 //data for the cycle we're building
 bitset currentCycle;
+int firstVertex;
+EDGE *firstEdge;
 
 /* Returns a bitset containing the indices of all faces contained
  * between from and to in a clockwise directions.
@@ -83,7 +85,7 @@ bitset facesBetween(EDGE *from, EDGE *to){
     return faces;
 }
 
-boolean continueCycle(EDGE *newEdge, int remainingVertices, int target,
+boolean continueCycle(EDGE *newEdge, int remainingVertices,
         bitset saturatedFaces, bitset facesRight, bitset facesLeft,
         bitset emptyFaces){
     //the end point of newEdge has not been added to the cycle yet
@@ -117,7 +119,7 @@ boolean continueCycle(EDGE *newEdge, int remainingVertices, int target,
     
     if(remainingVertices == 1){
         //this was the last vertex: we try to close the cycle
-        if(CONTAINS(neighbours[newEdge->end], target)){
+        if(CONTAINS(neighbours[newEdge->end], firstVertex)){
             //the cycle can be closed
             //TODO
         }
@@ -126,7 +128,7 @@ boolean continueCycle(EDGE *newEdge, int remainingVertices, int target,
         e = elast = firstedge[newEdge->end];
         do {
             if(!CONTAINS(currentCycle, e->end)){
-                if(continueCycle(e, remainingVertices - 1, target, saturatedFaces,
+                if(continueCycle(e, remainingVertices - 1, saturatedFaces,
                         UNION(facesRight, facesBetween(e, newEdge->inverse)),
                         UNION(facesLeft, facesBetween(newEdge->inverse, e)),
                         emptyFaces)){
@@ -160,17 +162,19 @@ boolean hasPathHamiltonianCycle(){
     }
     
     //start looking for a cycle
+    firstVertex = minDegreeVertex;
     currentCycle = SINGLETON(minDegreeVertex);
     e = elast = firstedge[minDegreeVertex];
     do {
         ADD(currentCycle, e->end);
+        firstEdge = e;
         bitset saturatedFaces = e->incident_faces;
         e2 = elast2 = firstedge[e->end];
         do {
             if(!CONTAINS(currentCycle, e2->end)){
                 bitset facesRight = facesBetween(e2, e->inverse);
                 bitset facesLeft = facesBetween(e->inverse, e2);
-                if(continueCycle(e2, nv - 2, minDegreeVertex, saturatedFaces,
+                if(continueCycle(e2, nv - 2, saturatedFaces,
                         facesRight, facesLeft, EMPTY_SET)){
                     return TRUE;
                 }
