@@ -156,10 +156,12 @@ boolean continueCycle(EDGE *newEdge, int remainingVertices,
                 e = e->next;
             }
             
-            finishCycle(e, saturatedFaces,
+            if(finishCycle(e, saturatedFaces,
                     UNION(facesRight, facesBetween(e, newEdge->inverse)),
                     UNION(facesLeft, facesBetween(newEdge->inverse, e)),
-                    emptyFaces);
+                    emptyFaces)){
+                return TRUE;
+            }
         }
     } else {
         //just continue the cycle
