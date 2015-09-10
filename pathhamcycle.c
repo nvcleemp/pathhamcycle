@@ -81,14 +81,31 @@ bitset facesBetween(EDGE *from, EDGE *to){
 }
 
 boolean continueCycle(EDGE *newEdge, int remainingVertices, int target,
-        bitset saturatedFaces, bitset facesRight, bitset facesLeft){
+        bitset saturatedFaces, bitset facesRight, bitset facesLeft,
+        bitset emptyFaces){
     //the end point of newEdge has not been added to the cycle yet
     //the faces between newEdge and the last edge have been added to left and right
     
     EDGE *e, *elast;
+    int i;
     
     if(IS_NOT_EMPTY(INTERSECTION(facesRight, facesLeft))){
         //a face cannot be on both sides of the cycles
+        return FALSE;
+    }
+    
+    bitset lastVertexSingleton = SINGLETON(newEdge->start);
+    for(i = 0; i < nf; i++){
+        if(IS_NOT_EMPTY(INTERSECTION(verticesInFace[i], lastVertexSingleton)) &&
+                !CONTAINS(saturatedFaces, i) &&
+                CONTAINS_ALL(currentCycle, verticesInFace[i])){
+            //we found a new empty face
+            ADD(emptyFaces, i);
+        }
+    }
+    if(IS_NOT_EMPTY(INTERSECTION(emptyFaces, facesLeft)) && 
+            IS_NOT_EMPTY(INTERSECTION(emptyFaces, facesRight))){
+        //there is an empty face on both sides of the cycle
         return FALSE;
     }
     
@@ -108,7 +125,8 @@ boolean continueCycle(EDGE *newEdge, int remainingVertices, int target,
             if(!CONTAINS(currentCycle, e->end)){
                 if(continueCycle(e, remainingVertices - 1, target, saturatedFaces,
                         UNION(facesRight, facesBetween(e, newEdge->inverse)),
-                        UNION(facesLeft, facesBetween(newEdge->inverse, e)))){
+                        UNION(facesLeft, facesBetween(newEdge->inverse, e)),
+                        emptyFaces)){
                     return TRUE;
                 }
             }
@@ -149,7 +167,8 @@ boolean hasPathHamiltonianCycle(){
             if(!CONTAINS(currentCycle, e2->end)){
                 bitset facesRight = facesBetween(e2, e->inverse);
                 bitset facesLeft = facesBetween(e->inverse, e2);
-                if(continueCycle(e2, nv - 2, minDegreeVertex, saturatedFaces, facesRight, facesLeft)){
+                if(continueCycle(e2, nv - 2, minDegreeVertex, saturatedFaces,
+                        facesRight, facesLeft, EMPTY_SET)){
                     return TRUE;
                 }
             }
