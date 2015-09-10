@@ -66,6 +66,9 @@ int nf;
 //data for the cycle we're building
 bitset currentCycle;
 
+/* Returns a bitset containing the indices of all faces contained
+ * between from and to in a clockwise directions.
+ */
 bitset facesBetween(EDGE *from, EDGE *to){
     EDGE *e, *elast;
     bitset faces = EMPTY_SET;
