@@ -80,16 +80,45 @@ bitset facesBetween(EDGE *from, EDGE *to){
     return faces;
 }
 
-boolean continueCycle(EDGE *e, int remainingVertices, int target,
+boolean continueCycle(EDGE *newEdge, int remainingVertices, int target,
         bitset saturatedFaces, bitset facesRight, bitset facesLeft){
-    //the end point of e has not been added to the cycle yet
+    //the end point of newEdge has not been added to the cycle yet
+    //the faces between newEdge and the last edge have been added to left and right
+    
+    EDGE *e, *elast;
     
     if(IS_NOT_EMPTY(INTERSECTION(facesRight, facesLeft))){
         //a face cannot be on both sides of the cycles
         return FALSE;
     }
     
-    exit(EXIT_FAILURE);
+    ADD(currentCycle, newEdge->end);
+    ADD_ALL(saturatedFaces, newEdge->incident_faces);
+    
+    if(remainingVertices == 1){
+        //this was the last vertex: we try to close the cycle
+        if(CONTAINS(neighbours[newEdge->end], target)){
+            //the cycle can be closed
+            //TODO
+        }
+    } else {
+        //just continue the cycle
+        e = elast = firstedge[newEdge->end];
+        do {
+            if(!CONTAINS(currentCycle, e->end)){
+                if(continueCycle(e, remainingVertices - 1, target, saturatedFaces,
+                        UNION(facesRight, facesBetween(e, newEdge->inverse)),
+                        UNION(facesLeft, facesBetween(newEdge->inverse, e)))){
+                    return TRUE;
+                }
+            }
+            e = e->next;
+        } while (e!=elast);
+    }
+    
+    REMOVE(currentCycle, newEdge->end);
+    
+    return FALSE;
 }
 
 boolean hasPathHamiltonianCycle(){
