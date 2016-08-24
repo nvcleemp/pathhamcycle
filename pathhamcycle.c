@@ -67,6 +67,7 @@ int nf;
 bitset currentCycle;
 int firstVertexCycle;
 EDGE *firstEdgeCycle;
+int currentCycleVertices[MAXN];
 
 /* Returns a bitset containing the indices of all faces contained
  * between from and to in a clockwise directions.
@@ -143,6 +144,7 @@ boolean continueCycle(EDGE *newEdge, int remainingVertices,
     }
     
     ADD(currentCycle, newEdge->end);
+    currentCycleVertices[nv - remainingVertices] = newEdge->end;
     ADD_ALL(saturatedFaces, newEdge->incident_faces);
     
     if(remainingVertices == 1){
@@ -204,9 +206,11 @@ boolean hasPathHamiltonianCycle(){
     //start looking for a cycle
     firstVertexCycle = minDegreeVertex;
     currentCycle = SINGLETON(minDegreeVertex);
+    currentCycleVertices[0] = minDegreeVertex;
     e = elast = firstedge[minDegreeVertex];
     do {
         ADD(currentCycle, e->end);
+        currentCycleVertices[1] = e->end;
         firstEdgeCycle = e;
         bitset saturatedFaces = e->incident_faces;
         e2 = elast2 = firstedge[e->end];
@@ -490,6 +494,10 @@ void help(char *name) {
     fprintf(stderr, "       Filter graphs that have the property.\n");
     fprintf(stderr, "    -i, --invert\n");
     fprintf(stderr, "       Invert the filter.\n");
+    fprintf(stderr, "    -p, --print\n");
+    fprintf(stderr, "       Print a path-hamiltonian cycle per graph.\n");
+    fprintf(stderr, "    -v, --verbose\n");
+    fprintf(stderr, "       Print more information. Also activates -p.\n");
     fprintf(stderr, "    -h, --help\n");
     fprintf(stderr, "       Print this help and return.\n");
 }
@@ -504,22 +512,33 @@ int main(int argc, char *argv[]) {
     /*=========== commandline parsing ===========*/
     boolean invert = FALSE;
     boolean filter = FALSE;
+    boolean printPathHamcycle = FALSE;
+    boolean verbose = FALSE;
     int c;
     char *name = argv[0];
     static struct option long_options[] = {
         {"invert", no_argument, NULL, 'i'},
         {"filter", no_argument, NULL, 'f'},
+        {"print", no_argument, NULL, 'p'},
+        {"verbose", no_argument, NULL, 'v'},
         {"help", no_argument, NULL, 'h'}
     };
     int option_index = 0;
 
-    while ((c = getopt_long(argc, argv, "hif", long_options, &option_index)) != -1) {
+    while ((c = getopt_long(argc, argv, "hifpv", long_options, &option_index)) != -1) {
         switch (c) {
             case 'i':
                 invert = TRUE;
                 break;
             case 'f':
                 filter = TRUE;
+                break;
+            case 'p':
+                printPathHamcycle = TRUE;
+                break;
+            case 'v':
+                printPathHamcycle = TRUE;
+                verbose = TRUE;
                 break;
             case 'h':
                 help(name);
@@ -545,18 +564,32 @@ int main(int argc, char *argv[]) {
     }
     while (readPlanarCode(code, &length, stdin)) {
         decodePlanarCode(code);
+        numberOfGraphs++;
         if(hasPathHamiltonianCycle()){
+            if(verbose){
+                fprintf(stderr, "Graph %llu contains a path-hamiltonian cycle.\n", numberOfGraphs);
+            }
+            if(printPathHamcycle){
+                fprintf(stderr, "An example of a path-hamiltonian cycle for graph %llu is\n   ", numberOfGraphs);
+                int i;
+                for(i = 0; i < nv; i++){
+                    fprintf(stderr, "%d ", currentCycleVertices[i] + 1);
+                }
+                fprintf(stderr, "\n");
+            }
             numberOfGraphsWithPathHamiltonianCycle++;
             if(filter && !invert){
                 writeCode(stdout, code, length);
             }
         } else {
+            if(verbose){
+                fprintf(stderr, "Graph %llu does not contain a path-hamiltonian cycle.\n", numberOfGraphs);
+            }
             numberOfGraphsWithoutPathHamiltonianCycle++;
             if(filter && invert){
                 writeCode(stdout, code, length);
             }
         }
-        numberOfGraphs++;
     }
     
     fprintf(stderr, "Read %llu graph%s.\n", numberOfGraphs, 
